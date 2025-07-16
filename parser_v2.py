@@ -25,7 +25,7 @@ def fetch_inspections(headers, page=1):
 
     params = {
         'page': page,
-        'itemsPerPage': 10000
+        'itemsPerPage': 1000
     }
     payload = {
         "numberOrUriNumber": None,
@@ -136,7 +136,7 @@ def main(headers):
             processed_items.append(processed_item)
         all_inspections.extend(processed_items)
         print(f"[INFO] Обработано {len(processed_items)} записей на странице {page}.")
-        if len(data['items']) < 10000:
+        if len(data['items']) < 1000:
             break
         page += 1
         time.sleep(1)

@@ -28,5 +28,5 @@ RUN chmod +x /update_cron.sh && /update_cron.sh
 # Открываем порт для Flask
 EXPOSE 5000
 
-# Запуск: сначала обновление данных, потом cron, tail и gunicorn
-CMD ["/bin/bash", "-c", "python -u parser.py && python -u load_to_sqlite.py && echo 'Сайт: http://localhost:5000' && touch /var/log/cron.log && cron -f & tail -F /var/log/cron.log & gunicorn -w 2 -t 120 -b 0.0.0.0:5000 server:app"] 
+# Запуск: сначала обновление данных, потом cron и gunicorn
+CMD ["/bin/bash", "-c", "python -u parser.py && python -u load_to_sqlite.py && echo 'Сайт: http://localhost:5000' && touch /var/log/cron.log && cron -f & gunicorn -w 2 -t 120 -b 0.0.0.0:5000 server:app"] 

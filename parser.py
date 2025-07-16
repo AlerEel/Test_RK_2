@@ -34,7 +34,7 @@ def main():
             return
         page = browser.new_page()
         try:
-            page.goto("https://dom.gosuslugi.ru/#!/rp")
+            page.goto("https://dom.gosuslugi.ru/#!/rp", wait_until="domcontentloaded")
         except Exception as e:
             print(f"[ERROR] Не удалось открыть сайт: {e}", flush=True)
             browser.close()
