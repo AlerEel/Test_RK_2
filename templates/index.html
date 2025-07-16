@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Результаты проверок</title>
+  <!-- Подключение Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Стили для карточек */
+    .inspection-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+      transition: transform 0.3s, box-shadow 0.3s;
+      background: linear-gradient(135deg, #f8fafc 80%, #e0e7ff 100%);
+      min-height: 220px;
+    }
+    .inspection-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(80, 112, 255, 0.13);
+      background: linear-gradient(135deg, #e0e7ff 60%, #f8fafc 100%);
+    }
+    .card-title {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+    .card-text strong {
+      color: #6366f1;
+    }
+    /* Цвета для статусов */
+    .status-success {
+      color: #22c55e;
+      font-weight: 500;
+    }
+    .status-warning {
+      color: #f59e42;
+      font-weight: 500;
+    }
+    .status-danger {
+      color: #ef4444;
+      font-weight: 500;
+    }
+    /* Цвет для результата */
+    .result-positive {
+      color: #2563eb;
+    }
+    .result-negative {
+      color: #b91c1c;
+    }
+    .result-neutral {
+      color: #64748b;
+    }
+    /* Фон страницы */
+    body {
+      background: linear-gradient(120deg, #f1f5f9 60%, #e0e7ff 100%);
+    }
+    /* Заголовок */
+    h1 {
+      color: #1e293b;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Результаты проверок</h1>
+
+    <!-- Карточки с результатами -->
+    <div class="row row-cols-1 g-4">
+      {% for row in rows %}
+        <div class="col">
+          <div class="card inspection-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">{{ row.entity_name }}</h5>
+              <p class="card-text"><strong>ОГРН:</strong> {{ row.ogrn }}</p>
+              <p class="card-text"><strong>Цель:</strong> {{ row.purpose }}</p>
+              {% set status_class = 'success' if 'Завершена' in row.status else 'warning' if 'Назначена' in row.status else 'danger' %}
+              <p class="card-text"><strong>Статус:</strong> <span class="status-{{ status_class }}">{{ row.status }}</span></p>
+              {% set result_class = 'result-positive' if 'выявлено' in row.result|lower else 'result-neutral' if row.result == '' else 'result-negative' %}
+              <p class="card-text"><strong>Результат:</strong> <span class="{{ result_class }}">{{ row.result }}</span></p>
+              <p class="card-text"><strong>Дата начала:</strong> {{ row.examStartDate }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+      {% if rows|length == 0 %}
+        <div class="col">
+          <div class="alert alert-warning text-center">Ничего не найдено по вашему запросу.</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Пагинация -->
+    <div class="mt-4 text-center">
+      <ul class="pagination justify-content-center">
+        {% if page > 1 %}
+          <li class="page-item"><a class="page-link" href="?page=1{% if request.args.get('q') %}&q={{ request.args.get('q') }}{% endif %}">&laquo; Первая</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ page-1 }}{% if request.args.get('q') %}&q={{ request.args.get('q') }}{% endif %}">&lt; Назад</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">&laquo; Первая</span></li>
+          <li class="page-item disabled"><span class="page-link">&lt; Назад</span></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page }}</span></li>
+        {% if page < total_pages %}
+          <li class="page-item"><a class="page-link" href="?page={{ page+1 }}{% if request.args.get('q') %}&q={{ request.args.get('q') }}{% endif %}">Вперёд &gt;</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ total_pages }}{% if request.args.get('q') %}&q={{ request.args.get('q') }}{% endif %}">Последняя &raquo;</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Вперёд &gt;</span></li>
+          <li class="page-item disabled"><span class="page-link">Последняя &raquo;</span></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Подключение JavaScript Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
