@@ -44,3 +44,14 @@
 - `templates/index.html` — внешний вид сайта (Bootstrap, карточки).
 - `Dockerfile`, `docker-compose.yml`, `update_cron.sh` — для автоматизации и запуска в Docker.
 - `requirements.txt` — зависимости Python.
+
+---
+
+## Возможные ошибки
+
+ - Есть вероятность, что при скачивании проект на ПК(windows) update_cron.sh будет сохранен в формате CRLF (Windows)
+ - Вам нужно перевести его в LF (Unix-формат)
+ - Для это переходим в powershell(Вводим "powershell" в адресную строку проводника, находясь в папке с проектом)
+ - Вводим команду:
+      (Get-Content update_cron.sh) | ForEach-Object { $_ -replace "\r", "" } | Set-Content update_cron.sh
+ - Готово, собираем контейнер
