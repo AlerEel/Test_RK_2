@@ -1,7 +1,7 @@
 import requests
 import json
 from dateutil.relativedelta import relativedelta
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 import uuid
 import random
@@ -16,11 +16,23 @@ def fetch_inspections_with_retry(headers, page=1, max_retries=5):
     """
     Выполняет HTTP-запрос с повторными попытками при ошибках 504 и других временных ошибках
     """
-    now = datetime.now()
-    one_month_ago = now - relativedelta(days=31)
+    end_date_str = datetime.now()
+    start_date_str = end_date_str - relativedelta(days=31)
 
-    exam_start_from = one_month_ago.strftime('%Y-%m-%dT21:00:00.000Z')
-    exam_start_to = now.strftime('%Y-%m-%dT21:00:00.000Z')
+    # Преобразуем строки в datetime
+    start_date = datetime.strptime(start_date_str, "%d.%m.%Y")
+    end_date = datetime.strptime(end_date_str, "%d.%m.%Y")
+
+    # Создаем datetime объекты в UTC с фиксированным временем 21:00
+    exam_start_from = datetime(
+        start_date.year, start_date.month, start_date.day - 1, 21, 0, 0, 0,
+        tzinfo=timezone.utc
+    ).isoformat(timespec='milliseconds') + 'Z'
+
+    exam_start_to = datetime(
+        end_date.year, end_date.month, end_date.day - 1, 21, 0, 0, 0,
+        tzinfo=timezone.utc
+    ).isoformat(timespec='milliseconds') + 'Z'
     
     print(f"[INFO] Страница {page}: запрашиваем данные с {exam_start_from} по {exam_start_to}")
     

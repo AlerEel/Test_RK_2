@@ -48,7 +48,7 @@
 - `load_to_sqlite.py` — функции для загрузки данных в SQLite (без работы с JSON).
 - `server.py` — Flask-сервер для просмотра данных.
 - `templates/index.html` — внешний вид сайта (Bootstrap, карточки).
-- `Dockerfile`, `docker-compose.yml`, `update_cron.sh` — для автоматизации и запуска в Docker.
+- `Dockerfile`, `docker-compose.yml` — для автоматизации и запуска в Docker.
 - `requirements.txt` — зависимости Python.
 
 ---
@@ -85,39 +85,31 @@
 
 ---
 
-## Устранение проблем с планировщиком
+## Диагностика и настройка cron
 
-### Если планировщик не работает:
+- Cron-задача для автоматического обновления данных теперь прописывается вручную или через Dockerfile.
+- Пример строки для `/etc/cron.d/update_data`:
+  ```
+  0 * * * * root cd /app && /usr/local/bin/python -u parser.py && /usr/local/bin/python -u load_to_sqlite.py >> /var/log/cron.log 2>&1
+  ```
+- Для диагностики работы cron смотрите логи:
+  ```sh
+  tail /var/log/cron.log
+  ```
+- Для теста можно временно добавить строку:
+  ```
+  * * * * * root echo "cron test $(date)" >> /var/log/cron.log 2>&1
+  ```
+  Если строки появляются каждую минуту — cron работает корректно.
 
-1. **Проверьте состояние cron в контейнере:**
-   ```sh
-   docker exec -it <container_name> bash
-   ./check_cron.sh
-   ```
+---
 
-2. **Перезапустите контейнер:**
-   ```sh
-   docker-compose down
-   docker-compose up --build
-   ```
+## Проблемы с форматом файлов (Windows)
 
-3. **Проверьте логи cron:**
-   ```sh
-   docker exec -it <container_name> cat /var/log/cron.log
-   ```
-
-4. **Принудительно запустите обновление данных:**
-   ```sh
-   docker exec -it <container_name> python parser.py && python load_to_sqlite.py
-   ```
-
-### Проблемы с форматом файлов (Windows)
-
-- Есть вероятность, что при скачивании проект на ПК(windows) update_cron.sh будет сохранен в формате CRLF (Windows)
-- Вам нужно перевести его в LF (Unix-формат)
-- Для это переходим в powershell(Вводим "powershell" в адресную строку проводника, находясь в папке с проектом)
-- Вводим команду:
+- Есть вероятность, что при скачивании проект на ПК (Windows) cron-файлы будут сохранены в формате CRLF (Windows)
+- Вам нужно перевести их в LF (Unix-формат)
+- Для этого используйте PowerShell:
      ```powershell
-     (Get-Content update_cron.sh) | ForEach-Object { $_ -replace "\r", "" } | Set-Content update_cron.sh
+     (Get-Content /etc/cron.d/update_data) | ForEach-Object { $_ -replace "\r", "" } | Set-Content /etc/cron.d/update_data
      ```
 - Готово, собираем контейнер

@@ -7,6 +7,8 @@ PAGE_SIZE = 10
 
 app = Flask(__name__)
 
+
+
 # Убедимся, что папка templates существует
 if not os.path.exists('templates'):
     os.makedirs('templates')
@@ -40,4 +42,4 @@ def index():
     return render_template('index.html', rows=rows, page=page, total_pages=total_pages, request=request)
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(host='0.0.0.0', port=5001)  # Запуск на порту 5001 

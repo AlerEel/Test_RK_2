@@ -1,0 +1,10 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# Cron jobs for scheduled-flask-app
+
+* * * * * root echo "$(date): Cron работает!" >> /var/log/cron.log 2>&1
+
+*/5 * * * * root echo "$(date): [cron] Запускаю parser.py..." >> /var/log/cron.log && cd /app && python parser.py >> /var/log/cron.log 2>&1 && echo "$(date): [cron] parser.py завершён" >> /var/log/cron.log
+
+@reboot root cd /app && /usr/local/bin/gunicorn -w 2 -t 120 -b 0.0.0.0:5000 server:app >> /var/log/cron.log 2>&1

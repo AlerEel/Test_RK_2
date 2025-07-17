@@ -2,32 +2,42 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Установим системные зависимости для playwright и cron
+# Установка системных зависимостей
 RUN apt-get update && \
-    apt-get install -y curl cron tzdata && \
+    apt-get install -y bash && \
+    apt-get install -y dos2unix && \
+    apt-get clean && \
+    apt-get install -y cron tzdata && \
     rm -rf /var/lib/apt/lists/*
 
-# Установим часовой пояс Europe/Moscow (UTC+3)
+# Установка часового пояса
 ENV TZ=Europe/Moscow
-RUN ln -snf /usr/share/zoneinfo/Europe/Moscow /etc/localtime && echo "Europe/Moscow" > /etc/timezone
+RUN ln -snf /usr/share/zoneinfo/Europe/Moscow /etc/localtime && \
+    echo "Europe/Moscow" > /etc/timezone
 
-# Установим зависимости Python
+# Копируем зависимости Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Установим браузеры для playwright
-RUN python -m playwright install --with-deps
 
 # Копируем проект
 COPY . .
 
-# Копируем cron-скрипты и делаем их исполняемыми
-COPY update_cron.sh /update_cron.sh
-COPY check_cron.sh /check_cron.sh
-RUN chmod +x /update_cron.sh /check_cron.sh
+# Установка playwright браузеров
+RUN python -m playwright install --with-deps
 
-# Открываем порт для Flask
+# Копируем crontab и настраиваем
+COPY crontab.txt /etc/cron.d/my-cron
+RUN chmod 0644 /etc/cron.d/my-cron
+
+RUN touch /var/log/cron.log && chmod a+rw /var/log/cron.log
+
+# Копируем и делаем исполняемым стартовый скрипт
+COPY start.sh /start.sh
+RUN dos2unix /start.sh && \
+    chmod +x /start.sh
+    
+# Открытие порта для Flask
 EXPOSE 5000
 
-# Запуск: сначала обновление данных, настройка cron, потом запуск cron и gunicorn
-CMD ["/bin/bash", "-c", "python -u parser.py && python -u load_to_sqlite.py && /update_cron.sh && echo 'Сайт: http://localhost:5000' && touch /var/log/cron.log && cron -f & gunicorn -w 2 -t 120 -b 0.0.0.0:5000 server:app"] 
+# Запуск стартового скрипта
+CMD ["/start.sh"]
