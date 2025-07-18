@@ -16,23 +16,20 @@ def fetch_inspections_with_retry(headers, page=1, max_retries=5):
     """
     Выполняет HTTP-запрос с повторными попытками при ошибках 504 и других временных ошибках
     """
-    end_date_str = datetime.now()
-    start_date_str = end_date_str - relativedelta(days=31)
+    now = datetime.now()
+    one_month_ago = now - relativedelta(days=31)
 
-    # Преобразуем строки в datetime
-    start_date = datetime.strptime(start_date_str, "%d.%m.%Y")
-    end_date = datetime.strptime(end_date_str, "%d.%m.%Y")
-
-    # Создаем datetime объекты в UTC с фиксированным временем 21:00
+    # Создаем datetime объекты в UTC с правильным временем
+    # API ожидает даты в формате YYYY-MM-DDTHH:MM:SS.sssZ
     exam_start_from = datetime(
-        start_date.year, start_date.month, start_date.day - 1, 21, 0, 0, 0,
+        one_month_ago.year, one_month_ago.month, one_month_ago.day, 21, 0, 0, 0,
         tzinfo=timezone.utc
-    ).isoformat(timespec='milliseconds') + 'Z'
+    ).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
     exam_start_to = datetime(
-        end_date.year, end_date.month, end_date.day - 1, 21, 0, 0, 0,
+        now.year, now.month, now.day, 21, 0, 0, 0,
         tzinfo=timezone.utc
-    ).isoformat(timespec='milliseconds') + 'Z'
+    ).strftime('%Y-%m-%dT%H:%M:%S.000Z')
     
     print(f"[INFO] Страница {page}: запрашиваем данные с {exam_start_from} по {exam_start_to}")
     
